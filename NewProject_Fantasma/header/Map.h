@@ -6,6 +6,8 @@
 #include "../header/Dungeon.h"
 #include "../header/Location.h"
 #include "../header/NameGenerator.h"
+
+#include "../header/Tilemap.h"
 #include <cstdlib>
 
 class Map {
@@ -19,7 +21,7 @@ class Map {
 
         Map():center(size/2), playerX(center),playerY(center){}
         ~Map();
-        void createMap(PerlinNoise*&);
+        void createMap();
        
 
         void townEvent(NameGenerator*&);
@@ -44,7 +46,14 @@ class Map {
         Dungeon* returnDungeon() { return DungeonList.at(DungeonIndex); }
 
         void setDungeonIndex(int, int);
+
+
+        void loadTilemap(int*, int);
+        Tilemap returnTilemap() { return mapTiles; }
     private:
+        Tilemap mapTiles;
+        
+
         vector<Town*>  TownList;
         vector<Dungeon*>  DungeonList;
         int playerX,playerY;

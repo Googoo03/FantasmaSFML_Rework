@@ -19,6 +19,7 @@
 #include "../header/Tilemap.h"
 #include <cmath>
 #include <stack>
+#include <queue>
 
 
 
@@ -32,7 +33,7 @@ void inventorySequence(char input, Character* player);
 
 void drawInventory(Character* player);
 
-void characterMovementValidation(char input, sf::Vector2u& position, uint16_t speed, bool& flipCharacter, sf::Sprite& character,Map*& map, int* mapData);
+void characterMovementValidation(char input, Character*& player, Map*& map, int* mapData);
 
 char menu(sf::RenderWindow& window, sf::Font font);
 
@@ -42,18 +43,21 @@ void setDungeon(Map*& map, Tilemap& tilemap);
 
 void pollEvent(sf::RenderWindow& window, char& input);
 
+void eventStateMachine(sf::RenderWindow& window, Map* newMap, int*& mapData, Character* player, queue<sf::Sprite>& drawSequence, char input);
+
+void drawElements(sf::RenderWindow& window, queue<sf::Sprite>& drawSequence);
+
 int main() {
     
-    PerlinNoise* myPerlin = new PerlinNoise(); //This needs a destructor!!!
+    sf::RenderWindow window(sf::VideoMode(1024, 1024), "Fantasma"); //Non-negotiable I think; keep in main
+    queue<sf::Sprite> drawSequence;
 
     Map* newMap = new Map();
-    newMap->createMap(myPerlin);
-    newMap->marchingSquares();
+    newMap->createMap();
 
     NameGenerator* names = new NameGenerator();
 
     int* mapData = newMap->returnMapData();
-
 
     bool TownEvent = false;
     bool DungeonEvent = false;
@@ -74,29 +78,8 @@ int main() {
     ///////////////MENU CODE HERE////////////////////////////
     //show main menu. Player has option to play or quit. 
     Character* userChar = nullptr; //CHANGE Later
-    FightScreen fightScreen;
-    //If quit, return 0;
-    sf::RenderWindow window(sf::VideoMode(1024, 1024), "Fantasma");
-
     char userChoice = menu(window, titleFont);
     characterSelection(userChoice, userChar, window, titleFont);
-
-    vector<Bandit*> enemies;
-    
-    Tilemap map;
-    if (!map.load("Tilemap.png", sf::Vector2u(8, 8), newMap->returnMapData(), 16, 0))  return 0;
-    map.setScale(8, 8);
-
-    sf::Texture characterSprite;
-    characterSprite.loadFromFile("Tilemap.png", sf::IntRect(144, 0, 8, 8));
-
-    sf::Sprite character;
-    sf::Vector2u characterPosition = sf::Vector2u(512,200);
-    uint16_t characterSpeed = 1;
-    character.setTexture(userChar->getTexture(1));
-    character.setScale(8, 8);
-
-
     /////////////////////////////////////////////////////////
 
     ///////////////GAME LOOP ////////////////////////////////
@@ -105,63 +88,67 @@ int main() {
         pollEvent(window, input); // checks for keypress and assigns input accordingly
         
         ///////////////////GAME EVENTS //////////////////////////
-
-
         TownEvent = newMap->getEnteredTown();
         BossEvent = newMap->getEnteredBoss();
         MapEvent = (!TownEvent) && (!DungeonEvent) && (!BossEvent) && (!InventoryEvent);
 
-        if (newMap->getEnteredDungeon()) {
-            if (!map.load("Tilemap.png", sf::Vector2u(8, 8), newMap->returnDungeon()->returnMapData(), 16, 1))  return 0;
-            mapData = newMap->returnDungeon()->returnMapData();
-            enemies = newMap->returnDungeon()->returnEnemies();
-
-            newMap->flipEnteredDungeon();
-            DungeonEvent = true;
-
-            //SAVES THE PLAYER'S POSITION
-            characterPosition = sf::Vector2u(characterPosition.x, characterPosition.y + 30);
-            userChar->positionStackPush(characterPosition);
-            characterPosition = sf::Vector2u(512, 900);
-            /////////////////////////////
-        }
-        if (newMap->getExit()) {
-            if (!map.load("Tilemap.png", sf::Vector2u(8, 8), newMap->returnMapData(), 16, 0))  return 0;
-            mapData = newMap->returnMapData();
-            newMap->flipExit();
-            DungeonEvent = false;
-            //SAVES THE PLAYER'S POSITION
-            characterPosition = userChar->positionStackPop();
-        }
-
-        window.draw(map);
-        characterMovementValidation(input, characterPosition, characterSpeed, flipCharacter, character, newMap, mapData);
-        uint16_t characterSpriteIndex = ((characterPosition.x / 16) + (characterPosition.y / 16)) % 3;
-        character.setPosition(characterPosition.x - (characterPosition.x % 8), characterPosition.y - (characterPosition.y % 8));
-        character.setTexture(userChar->getTexture(characterSpriteIndex));
-        window.draw(character);
-
-        if (DungeonEvent) {
-            
-            for (int i = 0; i < enemies.size(); ++i) {
-                //enemies[i]->getSprite().setPosition(200, 200 + (i * 50));
-                enemies.at(i)->getSprite().setTexture(enemies.at(i)->getTexture(1));
-                window.draw(enemies.at(i)->getSprite());
-            }
-        }
-        
-        
+        eventStateMachine(window, newMap, mapData, userChar, drawSequence, input);
+        drawElements(window, drawSequence);
         
         window.display();
     }
     ////////////////////////////////////////////////////
-
-    //Delete memory allocation
-    delete myPerlin;
     delete newMap;
     delete names;
     delete userChar;
     return 0;
+}
+
+void eventStateMachine(sf::RenderWindow& window, Map* newMap, int*& mapData, Character* player, queue<sf::Sprite>& drawSequence, char input) {
+    vector<Bandit*> enemies;
+    sf::Vector2u characterPosition = player->getCharacterPosition();
+    bool DungeonEvent = false;
+
+    if (newMap->getEnteredDungeon()) {
+
+        newMap->loadTilemap(newMap->returnDungeon()->returnMapData(), 1);
+        mapData = newMap->returnDungeon()->returnMapData();
+        enemies = newMap->returnDungeon()->returnEnemies();
+
+        newMap->flipEnteredDungeon();
+        DungeonEvent = true;
+
+        //SAVES THE PLAYER'S POSITION
+        characterPosition = sf::Vector2u(characterPosition.x, characterPosition.y + 30);
+        player->positionStackPush(characterPosition);
+        characterPosition = sf::Vector2u(512, 900);
+        /////////////////////////////
+    }
+    if (newMap->getExit()) {
+        newMap->loadTilemap(newMap->returnMapData(), 0);
+        mapData = newMap->returnMapData();
+        newMap->flipExit();
+        DungeonEvent = false;
+        //SAVES THE PLAYER'S POSITION
+        characterPosition = player->positionStackPop();
+    }
+    player->setCharacterPosition(characterPosition);
+    window.draw(newMap->returnTilemap()); //tilemap cant be passed into drawSequence, therefore window has to draw it here, any way to optimize?
+
+    characterMovementValidation(input, player, newMap, mapData);
+
+    player->updateCharacter();
+
+    drawSequence.push(player->getCharacterSprite());
+
+    if (DungeonEvent) {
+
+        for (int i = 0; i < enemies.size(); ++i) {
+            //enemies[i]->getSprite().setPosition(200, 200 + (i * 50));
+            enemies.at(i)->getSprite().setTexture(enemies.at(i)->getTexture(1));
+            drawSequence.push(enemies.at(i)->getSprite());
+        }
+    }
 }
 
 void pollEvent(sf::RenderWindow& window, char& input) {
@@ -180,12 +167,17 @@ void pollEvent(sf::RenderWindow& window, char& input) {
     window.clear();
 }
 
-void drawElements(sf::RenderWindow& window, sf::Sprite& character) {
-    
+void drawElements(sf::RenderWindow& window, queue<sf::Sprite>& drawSequence) {
+    while (!drawSequence.empty()) {
+        window.draw(drawSequence.front());
+        drawSequence.pop();
+    }
 }
 
-void characterMovementValidation(char input, sf::Vector2u& position, uint16_t speed, bool& flipCharacter, sf::Sprite& character, Map*& map, int* mapData) {
+void characterMovementValidation(char input, Character*& player, Map*& map, int* mapData) {
     char inputCharacter = input & 95;
+    sf::Vector2u position = player->getCharacterPosition();
+    uint16_t speed = player->getCharacterSpeed();
 
     int xQuad = ((position.x) / 64);
     int yQuad = ((position.y) / 64);
@@ -209,10 +201,11 @@ void characterMovementValidation(char input, sf::Vector2u& position, uint16_t sp
         if (mapData[(xQuad) + (leftadjacentY*16)] == 16) { 
             position.x -= position.x > speed ? speed : 0; 
         }
-        if (!flipCharacter) {
+        player->setCharacterDirection(false); //turns player left
+        /*if (!flipCharacter) {
             character.setTextureRect(sf::IntRect(8, 0, -8, 8));
             flipCharacter = !flipCharacter;
-        }
+        }*/
         break;
     case 'S':
         if (mapData[(upadjacentX)+( (yQuad+1) * 16)] == 16) {
@@ -228,16 +221,16 @@ void characterMovementValidation(char input, sf::Vector2u& position, uint16_t sp
         if (mapData[(xQuad+1)+((leftadjacentY) * 16)] == 16) {
             position.x += position.x < bound ? speed : 0;
         }
-        
-        if (flipCharacter) { 
+        player->setCharacterDirection(true);
+        /*if (flipCharacter) {
             character.setTextureRect(sf::IntRect(0, 0, 8, 8));
             flipCharacter = !flipCharacter;
-        }
+        }*/
         break;
     
     }
 
-
+    player->setCharacterPosition(position);
 }
 
 

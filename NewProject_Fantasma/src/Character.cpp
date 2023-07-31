@@ -8,6 +8,26 @@ Character::~Character(){
     }
 }
 
+void Character::setCharacterPosition(sf::Vector2u pos) {
+    characterPosition = pos;
+}
+
+void Character::updateCharacter() {
+    uint16_t characterSpriteIndex = ((characterPosition.x / 16) + (characterPosition.y / 16)) % 3;
+
+    characterSprite.setPosition(characterPosition.x - (characterPosition.x % 8), characterPosition.y - (characterPosition.y % 8));
+    characterSprite.setTexture(textureArray[characterSpriteIndex]);
+}
+
+void Character::setCharacterDirection(bool right) {
+    if (right) {
+        characterSprite.setTextureRect(sf::IntRect(0, 0, 8, 8));
+    }
+    else {
+        characterSprite.setTextureRect(sf::IntRect(8, 0, -8, 8));
+    }
+}
+
 void Character::removeHealth(double x)
 {
     if(x > 0)

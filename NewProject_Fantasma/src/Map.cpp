@@ -15,7 +15,10 @@ Map::~Map(){
 
 
 
-void Map::createMap(PerlinNoise*& myPerlin) {
+void Map::createMap() {
+
+    PerlinNoise* myPerlin = new PerlinNoise();
+
     srand(time(0));
     int seed = rand();
 
@@ -54,6 +57,16 @@ void Map::createMap(PerlinNoise*& myPerlin) {
 
         }
     }
+    marchingSquares();
+    loadTilemap(mapData, 0);
+
+
+    delete myPerlin;
+}
+
+void Map::loadTilemap(int* tileData, int scene) {
+    if (!mapTiles.load("Tilemap.png", sf::Vector2u(8, 8), tileData, 16, scene))  return;
+    mapTiles.setScale(8, 8);
 }
 
 
