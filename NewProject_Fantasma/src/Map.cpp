@@ -30,7 +30,7 @@ void Map::createMap(PerlinNoise*& myPerlin) {
             mountainValue += 2.0 / sqrt(pow(abs(center - i), 2) + pow(abs(center - j), 2));
             if (mountainValue > 0.4 && perlinValue > 0.5) {
 
-                mapData[(i * size) + j] = 16; //SET BACK TO 17
+                mapData[(i * size) + j] = 17; //SET BACK TO 17
             }
             else if (perlinValue > 0.2) {
                 mapData[(i * size) + j] = 16;

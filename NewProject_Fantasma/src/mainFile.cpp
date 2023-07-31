@@ -24,6 +24,8 @@
 
 //using namespace std;
 
+
+
 void buySequence(char input, Map* newMap, Character* player);
 
 void inventorySequence(char input, Character* player);
@@ -38,8 +40,10 @@ void characterSelection(char choice, Character*& userChar, sf::RenderWindow& win
 
 void setDungeon(Map*& map, Tilemap& tilemap);
 
+void pollEvent(sf::RenderWindow& window, char& input);
 
 int main() {
+    
     PerlinNoise* myPerlin = new PerlinNoise(); //This needs a destructor!!!
 
     Map* newMap = new Map();
@@ -49,8 +53,8 @@ int main() {
     NameGenerator* names = new NameGenerator();
 
     int* mapData = newMap->returnMapData();
-    
-    
+
+
     bool TownEvent = false;
     bool DungeonEvent = false;
     bool BossEvent = false;
@@ -58,8 +62,8 @@ int main() {
 
     bool winFight = false;
 
-    bool MapEvent = (!TownEvent) && (!DungeonEvent) && (!BossEvent) && (!InventoryEvent)&& (!winFight);
-    
+    bool MapEvent = (!TownEvent) && (!DungeonEvent) && (!BossEvent) && (!InventoryEvent) && (!winFight);
+
     char input = ' ';
     bool flipCharacter = false;
 
@@ -98,21 +102,7 @@ int main() {
     ///////////////GAME LOOP ////////////////////////////////
     while(window.isOpen()){
         
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-            if (event.type == sf::Event::KeyPressed) {
-                input = event.key.code + 65;
-            }
-            if (event.type == sf::Event::KeyReleased) {
-                input = ' ';
-            }
-            
-            
-        }
-        window.clear();
+        pollEvent(window, input); // checks for keypress and assigns input accordingly
         
         ///////////////////GAME EVENTS //////////////////////////
 
@@ -159,22 +149,7 @@ int main() {
                 window.draw(enemies.at(i)->getSprite());
             }
         }
-
-        ////////////////////INPUT VALIDATION///////////////////
-        if(TownEvent){
-            buySequence(input, newMap, userChar);
-        }else if(InventoryEvent){
-            cout << "\033[2J\033[1;1H";
-            userChar->displayInventory();
-
-            cout << "Press i to leave" << endl;
-        }
         
-        if ((input & 95) == 'I') { //checks whether uppercase or lowercase has been pressed
-
-            InventoryEvent = !InventoryEvent;
-            input = ' ';
-        }
         
         
         window.display();
@@ -189,6 +164,25 @@ int main() {
     return 0;
 }
 
+void pollEvent(sf::RenderWindow& window, char& input) {
+    sf::Event event;
+    while (window.pollEvent(event))
+    {
+        if (event.type == sf::Event::Closed)
+            window.close();
+        if (event.type == sf::Event::KeyPressed) { //Checks for keypress and assigns necessary ASCII Value
+            input = event.key.code + 65;
+        }
+        if (event.type == sf::Event::KeyReleased) { //Resets ASCII value if key is released
+            input = ' ';
+        }
+    }
+    window.clear();
+}
+
+void drawElements(sf::RenderWindow& window, sf::Sprite& character) {
+    
+}
 
 void characterMovementValidation(char input, sf::Vector2u& position, uint16_t speed, bool& flipCharacter, sf::Sprite& character, Map*& map, int* mapData) {
     char inputCharacter = input & 95;
