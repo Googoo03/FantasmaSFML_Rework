@@ -33,7 +33,7 @@ void Map::createMap() {
             mountainValue += 2.0 / sqrt(pow(abs(center - i), 2) + pow(abs(center - j), 2));
             if (mountainValue > 0.4 && perlinValue > 0.5) {
 
-                mapData[(i * size) + j] = 17; //SET BACK TO 17
+                mapData[(i*size)+j] = 17; //SET BACK TO 17
             }
             else if (perlinValue > 0.2) {
                 mapData[(i * size) + j] = 16;
@@ -44,7 +44,7 @@ void Map::createMap() {
                     //this is where we'll add T to the town list
                 }
                 else if (int(perlinValue * 1000) % 63 <= 10) {
-                    mapData[(i * size) + j] = 20; 
+                    mapData[(i * size) + j] = 20;
                     Dungeon* newdungeon = new Dungeon(i, j, seed);
                     newdungeon->createDungeon(myPerlin);
                     DungeonList.push_back(newdungeon);
@@ -64,14 +64,15 @@ void Map::createMap() {
     delete myPerlin;
 }
 
+
 void Map::loadTilemap(int* tileData, int scene) {
-    if (!mapTiles.load("Tilemap.png", sf::Vector2u(8, 8), tileData, 16, scene))  return;
+    if (!mapTiles.load("Tilemap.png", sf::Vector2u(8, 8), size, tileData, scene))  return;
     mapTiles.setScale(8, 8);
 }
 
 
 void Map::marchingSquares(){
-    mapData[(center * center) + center] = 20; //BossDungeonID
+    mapData[(center*center)+center] = 20; //BossDungeonID
 
 }
 

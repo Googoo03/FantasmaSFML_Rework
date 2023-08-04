@@ -21,6 +21,7 @@ class Map {
 
         Map():center(size/2), playerX(center),playerY(center){}
         ~Map();
+
         void createMap();
        
 
@@ -40,6 +41,8 @@ class Map {
 
         string returnTownName(Town*& town);
         string returnDungeonName(Dungeon*& dungeon);
+
+        
         int* returnMapData() { return mapData; }
 
         Town* returnTown(){ return TownList.at(TownIndex);}
@@ -47,9 +50,11 @@ class Map {
 
         void setDungeonIndex(int, int);
 
-
+        
         void loadTilemap(int*, int);
         Tilemap returnTilemap() { return mapTiles; }
+
+        int getSize() { return size; }
     private:
         Tilemap mapTiles;
         

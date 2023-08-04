@@ -12,6 +12,9 @@ void Character::setCharacterPosition(sf::Vector2u pos) {
     characterPosition = pos;
 }
 
+void Character::setCanMove(bool set) { canMove = set; }
+void Character::setTilePos(int tile) { characterTileNum = tile; }
+
 void Character::updateCharacter() {
     uint16_t characterSpriteIndex = ((characterPosition.x / 16) + (characterPosition.y / 16)) % 3;
 

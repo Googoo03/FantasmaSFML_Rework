@@ -28,6 +28,10 @@ class Character{
         sf::Sprite characterSprite;
         sf::Vector2u characterPosition;
         uint16_t characterSpeed;
+
+        int characterTileNum;
+        bool canMove;
+        int direction; //0 is nothing, 1 right, 2 up, 3 left, 4 down
     public:
 
         virtual void UnequipItem() = 0;
@@ -39,10 +43,14 @@ class Character{
                 textureArray[i].loadFromFile("Tilemap.png", sf::IntRect(TextureX, TextureY+(textureSize*i), textureSize, textureSize));
             }
 
-            characterPosition = sf::Vector2u(512, 200);
+            characterPosition = sf::Vector2u(512, 64);
+            characterTileNum = ((64/64)*16)+(512/64);
             characterSprite.setTexture(textureArray[1]);
             characterSprite.setScale(8, 8);
             characterSpeed = 1;
+
+            canMove = true;
+            direction = 0;
         }
         ~Character();
 
@@ -59,6 +67,15 @@ class Character{
         void setCharacterDirection(bool); //false- 0 is left : 1 is right
         uint16_t getCharacterSpeed() { return characterSpeed; }
         sf::Sprite& getCharacterSprite() { return characterSprite; }
+
+        int getDirection() { return direction; }
+        void setDirection(int dir) { direction = dir; }
+
+        bool getCanMove() { return canMove; }
+        void setCanMove(bool set);
+
+        int getTilePos() { return characterTileNum; }
+        void setTilePos(int tile);
 
         void addItem(Item* item);
         void removeHealth(double x);

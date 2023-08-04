@@ -176,29 +176,70 @@ void drawElements(sf::RenderWindow& window, queue<sf::Sprite>& drawSequence) {
 
 void characterMovementValidation(char input, Character*& player, Map*& map, int* mapData) {
     char inputCharacter = input & 95;
-    sf::Vector2u position = player->getCharacterPosition();
+
+    sf::Vector2u position = player->getCharacterPosition(); //performance can be increased marginally by having a local variable "size".
     uint16_t speed = player->getCharacterSpeed();
+    int currentTile = player->getTilePos();
 
     int xQuad = ((position.x) / 64);
     int yQuad = ((position.y) / 64);
 
     int leftadjacentY = ((position.y + 32) / 64);
     int upadjacentX = ((position.x + 32) / 64);
+
+    int dir = player->getDirection();
     
     int bound = 1024 - (64 + speed); //Square boundary of character sprite. Replace 64 with dynamic measurements
     
+
+    if (!player->getCanMove()) {
+        if ((yQuad * map->getSize() + xQuad) == currentTile) {
+            player->setCanMove(true);
+            player->setDirection(0);
+        }
+        if (dir % 2 != 0) {
+            if (dir == 1) {
+                position.x += speed;
+            }
+            else {
+                position.x -= speed; ///HOW WILL THE PLAYER KNOW WHEN IT IS IN THE TILE OVER?? INCREMENT/DECREMENT TILE ACCORDINGLY TOO
+                //THE PLAYER CAN KNOW THROUGH THE XQUAD YQUAD VARIABLES AND MATCH TO THE PLAYER'S CURRENT TILE.
+            }
+        }
+        else {
+            if (dir == 2) {
+                position.y += speed;
+            }
+            else {
+                position.y -= speed;
+            }
+        }
+        
+    }
+    
+
     switch (inputCharacter) {
     case 'W':
-        if (mapData[(upadjacentX)+(yQuad * 16)] == 16) {
+        if (currentTile / map->getSize() >= 0 && player->getCanMove()) { //CHARACTER DISAPPEARS WHEN HITTING TOP OF SCREEN. POSITION GOES NEGATIVE???
+            player->setCanMove(false);
+            player->setDirection(4);
+            player->setTilePos(currentTile - map->getSize());
+        }
+        /*if (mapData[(upadjacentX)+(yQuad * 16)] == 16) {
             position.y -= position.y > speed ? speed : 0;
         }
         else if (mapData[(upadjacentX)+(yQuad * 16)] == 20) {
             //want to go into dungeon. set map to dungeon mapdata and reset player position. HOW TO KNOW WHAT DUNGEON IS WHICH
             map->setDungeonIndex(xQuad, yQuad);
-        }
+        }*/
         break;
     case 'A':
-        if (mapData[(xQuad) + (leftadjacentY*16)] == 16) { 
+        if (currentTile%map->getSize() >= 0 && player->getCanMove()) {
+            player->setCanMove(false);
+            player->setDirection(3);
+            player->setTilePos(currentTile - 1);
+        }
+        /*if (mapData[(xQuad)+(leftadjacentY * 16)] == 16) {
             position.x -= position.x > speed ? speed : 0; 
         }
         player->setCharacterDirection(false); //turns player left
@@ -208,6 +249,12 @@ void characterMovementValidation(char input, Character*& player, Map*& map, int*
         }*/
         break;
     case 'S':
+        if (currentTile / map->getSize() < map->getSize() - 1 && player->getCanMove()) {
+            player->setCanMove(false);
+            player->setDirection(2);
+            player->setTilePos(currentTile + map->getSize());
+        }
+        /*
         if (mapData[(upadjacentX)+( (yQuad+1) * 16)] == 16) {
             position.y += position.y < bound ? speed : 0;
         }
@@ -215,10 +262,16 @@ void characterMovementValidation(char input, Character*& player, Map*& map, int*
             //set back to normal map
 
             map->flipExit();
-        }
+        }*/
         break;
     case 'D':
-        if (mapData[(xQuad+1)+((leftadjacentY) * 16)] == 16) {
+        if (currentTile % map->getSize() < map->getSize()-1 && player->getCanMove()) {
+            player->setCanMove(false);
+            player->setDirection(1);
+            player->setTilePos(currentTile + 1);
+        }
+
+        /*if (mapData[(xQuad + 1) + ((leftadjacentY) * 16)] == 16) {
             position.x += position.x < bound ? speed : 0;
         }
         player->setCharacterDirection(true);

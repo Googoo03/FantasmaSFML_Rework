@@ -1,6 +1,7 @@
 #include "../header/Tilemap.h"
 
-bool Tilemap::load(const string& filename, sf::Vector2u tileResolution, int* tiles, int size, int scene) {
+//is it okay if this is mentioned in both the header and source file?
+bool Tilemap::load(const string& filename, sf::Vector2u tileResolution, const static int size, int* tiles, int scene) {
 	
 	if (!t_tileSet.loadFromFile(filename)) return false;
 

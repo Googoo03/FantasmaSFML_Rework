@@ -3,12 +3,15 @@
 #include "SFML/Graphics.hpp"
 #include <iostream>
 
+
 using namespace std;
 
 class Tilemap : public sf::Drawable, public sf::Transformable {
 
 public:
-	bool load(const string& filename, sf::Vector2u tileResolution, int*tiles,int size, int scene);
+    
+	bool load(const string& filename, sf::Vector2u tileResolution,const static int size, int* tiles, int scene);
+
     sf::VertexArray& getVarray() { return t_varray; }
 private:
 	sf::VertexArray t_varray;
