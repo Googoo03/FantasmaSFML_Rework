@@ -18,6 +18,7 @@
 #include "conio.h"
 #include "../header/Tilemap.h"
 #include <cmath>
+#include <algorithm>
 #include <stack>
 #include <queue>
 
@@ -183,36 +184,31 @@ void characterMovementValidation(char input, Character*& player, Map*& map, int*
 
     int xQuad = ((position.x) / 64);
     int yQuad = ((position.y) / 64);
-
-    int leftadjacentY = ((position.y + 32) / 64);
-    int upadjacentX = ((position.x + 32) / 64);
-
     int dir = player->getDirection();
     
-    int bound = 1024 - (64 + speed); //Square boundary of character sprite. Replace 64 with dynamic measurements
-    
-
+    //THE DISAPPEARING CHARACTER IS DUE TO THE POSITION VARIABLE BEING UNSIGNED AND BECOMING LARGE
+    //THE CURRENTTILE VARIABLE IS OFFSET BECAUSE THE SPRITE CENTER IS SET TO THE TOPLEFT.
+    //TO FIX THIS, SET THE CENTER TO BE MORE ACCURATE.
     if (!player->getCanMove()) {
         if ((yQuad * map->getSize() + xQuad) == currentTile) {
             player->setCanMove(true);
             player->setDirection(0);
         }
         if (dir % 2 != 0) {
-            if (dir == 1) {
+            if (dir != 1) {
+                if (position.x < speed) {
+                    position.x = 0;
+                }
+                else { position.x -= speed; }
+            }
+            else {
                 position.x += speed;
             }
-            else {
-                position.x -= speed; ///HOW WILL THE PLAYER KNOW WHEN IT IS IN THE TILE OVER?? INCREMENT/DECREMENT TILE ACCORDINGLY TOO
-                //THE PLAYER CAN KNOW THROUGH THE XQUAD YQUAD VARIABLES AND MATCH TO THE PLAYER'S CURRENT TILE.
-            }
+            
+            //position.x += dir == 1 ? speed : -speed;
         }
         else {
-            if (dir == 2) {
-                position.y += speed;
-            }
-            else {
-                position.y -= speed;
-            }
+            position.y += dir == 2 ? speed : -speed;
         }
         
     }
@@ -234,7 +230,7 @@ void characterMovementValidation(char input, Character*& player, Map*& map, int*
         }*/
         break;
     case 'A':
-        if (currentTile%map->getSize() >= 0 && player->getCanMove()) {
+        if (currentTile%map->getSize() > 0 && player->getCanMove()) {
             player->setCanMove(false);
             player->setDirection(3);
             player->setTilePos(currentTile - 1);
@@ -282,7 +278,7 @@ void characterMovementValidation(char input, Character*& player, Map*& map, int*
         break;
     
     }
-
+    
     player->setCharacterPosition(position);
 }
 
