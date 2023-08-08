@@ -8,8 +8,31 @@ Character::~Character(){
     }
 }
 
-void Character::setCharacterPosition(sf::Vector2u pos) {
+void Character::setCharacterPosition(sf::Vector2i pos) {
     characterPosition = pos;
+}
+
+void Character::setNewTile(int tile) { nextTile = tile; }
+
+void Character::interpolatePosition() {
+    if (oldPosition == sf::Vector2i(-1, -1)) oldPosition = characterPosition;
+
+    sf::Vector2i destination = sf::Vector2i(((nextTile % 16) * 64), ((nextTile / 16) * 64));
+
+    if (characterPosition == destination) { //finished moving
+        characterTileNum = nextTile;
+        nextTile = -1;
+        interpolationFactor = 0;
+        oldPosition = sf::Vector2i(-1, -1);
+        canMove = true;
+        return;
+    }
+
+    
+    characterPosition.x = oldPosition.x + (interpolationFactor * (destination.x - oldPosition.x));
+    characterPosition.y = oldPosition.y + (interpolationFactor * (destination.y - oldPosition.y));
+
+    interpolationFactor += 0.01; //CHANGE LATER
 }
 
 void Character::setCanMove(bool set) { canMove = set; }

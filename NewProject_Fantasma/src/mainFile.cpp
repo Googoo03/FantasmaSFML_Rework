@@ -107,7 +107,7 @@ int main() {
 
 void eventStateMachine(sf::RenderWindow& window, Map* newMap, int*& mapData, Character* player, queue<sf::Sprite>& drawSequence, char input) {
     vector<Bandit*> enemies;
-    sf::Vector2u characterPosition = player->getCharacterPosition();
+    sf::Vector2i characterPosition = player->getCharacterPosition();
     bool DungeonEvent = false;
 
     if (newMap->getEnteredDungeon()) {
@@ -120,9 +120,9 @@ void eventStateMachine(sf::RenderWindow& window, Map* newMap, int*& mapData, Cha
         DungeonEvent = true;
 
         //SAVES THE PLAYER'S POSITION
-        characterPosition = sf::Vector2u(characterPosition.x, characterPosition.y + 30);
+        characterPosition = sf::Vector2i(characterPosition.x, characterPosition.y + 30);
         player->positionStackPush(characterPosition);
-        characterPosition = sf::Vector2u(512, 900);
+        characterPosition = sf::Vector2i(512, 900);
         /////////////////////////////
     }
     if (newMap->getExit()) {
@@ -178,108 +178,46 @@ void drawElements(sf::RenderWindow& window, queue<sf::Sprite>& drawSequence) {
 void characterMovementValidation(char input, Character*& player, Map*& map, int* mapData) {
     char inputCharacter = input & 95;
 
-    sf::Vector2u position = player->getCharacterPosition(); //performance can be increased marginally by having a local variable "size".
-    uint16_t speed = player->getCharacterSpeed();
+    sf::Vector2i position = player->getCharacterPosition();
     int currentTile = player->getTilePos();
-
-    int xQuad = ((position.x) / 64);
-    int yQuad = ((position.y) / 64);
-    int dir = player->getDirection();
+    int size = map->getSize();
     
-    //THE DISAPPEARING CHARACTER IS DUE TO THE POSITION VARIABLE BEING UNSIGNED AND BECOMING LARGE
-    //THE CURRENTTILE VARIABLE IS OFFSET BECAUSE THE SPRITE CENTER IS SET TO THE TOPLEFT.
-    //TO FIX THIS, SET THE CENTER TO BE MORE ACCURATE.
-    if (!player->getCanMove()) {
-        if ((yQuad * map->getSize() + xQuad) == currentTile) {
-            player->setCanMove(true);
-            player->setDirection(0);
-        }
-        if (dir % 2 != 0) {
-            if (dir != 1) {
-                if (position.x < speed) {
-                    position.x = 0;
-                }
-                else { position.x -= speed; }
-            }
-            else {
-                position.x += speed;
-            }
-            
-            //position.x += dir == 1 ? speed : -speed;
-        }
-        else {
-            position.y += dir == 2 ? speed : -speed;
-        }
-        
+    if (!(player->getCanMove())) { //is currently moving
+        player->interpolatePosition();
+        return;
     }
-    
 
     switch (inputCharacter) {
     case 'W':
-        if (currentTile / map->getSize() >= 0 && player->getCanMove()) { //CHARACTER DISAPPEARS WHEN HITTING TOP OF SCREEN. POSITION GOES NEGATIVE???
+        if (currentTile / size > 0 && player->getCanMove()) { //CHARACTER DISAPPEARS WHEN HITTING TOP OF SCREEN. POSITION GOES NEGATIVE???
             player->setCanMove(false);
             player->setDirection(4);
-            player->setTilePos(currentTile - map->getSize());
+            player->setNewTile(currentTile - size);
         }
-        /*if (mapData[(upadjacentX)+(yQuad * 16)] == 16) {
-            position.y -= position.y > speed ? speed : 0;
-        }
-        else if (mapData[(upadjacentX)+(yQuad * 16)] == 20) {
-            //want to go into dungeon. set map to dungeon mapdata and reset player position. HOW TO KNOW WHAT DUNGEON IS WHICH
-            map->setDungeonIndex(xQuad, yQuad);
-        }*/
         break;
     case 'A':
-        if (currentTile%map->getSize() > 0 && player->getCanMove()) {
+        if (currentTile % size > 0 && player->getCanMove()) {
             player->setCanMove(false);
             player->setDirection(3);
-            player->setTilePos(currentTile - 1);
+            player->setNewTile(currentTile - 1);
         }
-        /*if (mapData[(xQuad)+(leftadjacentY * 16)] == 16) {
-            position.x -= position.x > speed ? speed : 0; 
-        }
-        player->setCharacterDirection(false); //turns player left
-        /*if (!flipCharacter) {
-            character.setTextureRect(sf::IntRect(8, 0, -8, 8));
-            flipCharacter = !flipCharacter;
-        }*/
         break;
     case 'S':
-        if (currentTile / map->getSize() < map->getSize() - 1 && player->getCanMove()) {
+        if (currentTile / size < map->getSize()-1 && player->getCanMove()) {
             player->setCanMove(false);
             player->setDirection(2);
-            player->setTilePos(currentTile + map->getSize());
+            player->setNewTile(currentTile + size);
         }
-        /*
-        if (mapData[(upadjacentX)+( (yQuad+1) * 16)] == 16) {
-            position.y += position.y < bound ? speed : 0;
-        }
-        else if (mapData[(upadjacentX)+((yQuad+1) * 16)] == 21) {
-            //set back to normal map
-
-            map->flipExit();
-        }*/
         break;
     case 'D':
-        if (currentTile % map->getSize() < map->getSize()-1 && player->getCanMove()) {
+        if (currentTile % size < map->getSize()-1 && player->getCanMove()) {
             player->setCanMove(false);
             player->setDirection(1);
-            player->setTilePos(currentTile + 1);
+            player->setNewTile(currentTile + 1);
         }
-
-        /*if (mapData[(xQuad + 1) + ((leftadjacentY) * 16)] == 16) {
-            position.x += position.x < bound ? speed : 0;
-        }
-        player->setCharacterDirection(true);
-        /*if (flipCharacter) {
-            character.setTextureRect(sf::IntRect(0, 0, 8, 8));
-            flipCharacter = !flipCharacter;
-        }*/
         break;
     
     }
-    
-    player->setCharacterPosition(position);
 }
 
 
