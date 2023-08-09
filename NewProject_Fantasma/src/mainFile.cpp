@@ -189,31 +189,43 @@ void characterMovementValidation(char input, Character*& player, Map*& map, int*
 
     switch (inputCharacter) {
     case 'W':
-        if (currentTile / size > 0 && player->getCanMove()) { //CHARACTER DISAPPEARS WHEN HITTING TOP OF SCREEN. POSITION GOES NEGATIVE???
-            player->setCanMove(false);
+        if (currentTile / size > 0 && player->getCanMove()) { //Each key checks if within bounds and canMove, if so, set movement.
+            
             player->setDirection(4);
-            player->setNewTile(currentTile - size);
+            if (map->getTileValue(currentTile - size) == 16) {
+                player->setCanMove(false);
+                player->setNewTile(currentTile - size);
+            }
         }
         break;
     case 'A':
         if (currentTile % size > 0 && player->getCanMove()) {
-            player->setCanMove(false);
+            
             player->setDirection(3);
-            player->setNewTile(currentTile - 1);
+            if (map->getTileValue(currentTile - 1) == 16) {
+                player->setCanMove(false);
+                player->setNewTile(currentTile - 1);
+            }
         }
         break;
     case 'S':
         if (currentTile / size < map->getSize()-1 && player->getCanMove()) {
-            player->setCanMove(false);
+           
             player->setDirection(2);
-            player->setNewTile(currentTile + size);
+            if (map->getTileValue(currentTile + size) == 16) {
+                player->setCanMove(false);
+                player->setNewTile(currentTile + size);
+            }
         }
         break;
     case 'D':
         if (currentTile % size < map->getSize()-1 && player->getCanMove()) {
-            player->setCanMove(false);
+            
             player->setDirection(1);
-            player->setNewTile(currentTile + 1);
+            if (map->getTileValue(currentTile + 1) == 16) {
+                player->setCanMove(false);
+                player->setNewTile(currentTile + 1);
+            }
         }
         break;
     

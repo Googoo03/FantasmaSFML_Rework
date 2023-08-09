@@ -29,7 +29,7 @@ class Map {
         void dungeonEvent();
 
         void marchingSquares();
-        void movementValidation(char input);
+        
         bool getEnteredTown(){return EnteredTown;}
 
         bool getEnteredDungeon(){return EnteredDungeon;}
@@ -50,6 +50,7 @@ class Map {
 
         void setDungeonIndex(int, int);
 
+        int getTileValue(int tile);
         
         void loadTilemap(int*, int);
         Tilemap returnTilemap() { return mapTiles; }

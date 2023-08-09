@@ -13,6 +13,9 @@ Map::~Map(){
     }
 }
 
+int Map::getTileValue(int tile) {
+    return mapData[tile];
+}
 
 
 void Map::createMap() {
@@ -43,7 +46,7 @@ void Map::createMap() {
                     TownList.push_back(new Town(i, j, seed));
                     //this is where we'll add T to the town list
                 }
-                else if (int(perlinValue * 1000) % 63 <= 10) {
+                else if (int(perlinValue * 1000) % 63 <= 2) {
                     mapData[(i * size) + j] = 20;
                     Dungeon* newdungeon = new Dungeon(i, j, seed);
                     newdungeon->createDungeon(myPerlin);
