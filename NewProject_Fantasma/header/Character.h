@@ -37,6 +37,7 @@ class Character{
 
         bool canMove;
         int direction; //0 is nothing, 1 right, 2 up, 3 left, 4 down
+        vector<int> walkableTiles = {16,20};
     public:
 
         virtual void UnequipItem() = 0;
@@ -78,6 +79,8 @@ class Character{
 
         void interpolatePosition();
         //void setNewPosition(sf::Vector2i);
+
+        vector<int>& getWalkableTiles() { return walkableTiles; }
 
         int getDirection() { return direction; }
         void setDirection(int dir) { direction = dir; }

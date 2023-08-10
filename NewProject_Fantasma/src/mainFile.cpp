@@ -48,6 +48,8 @@ void eventStateMachine(sf::RenderWindow& window, Map* newMap, int*& mapData, Cha
 
 void drawElements(sf::RenderWindow& window, queue<sf::Sprite>& drawSequence);
 
+void characterMovementStateMachine(int currentTile, Character*& player, Map*& map, vector<int>& walkableTiles);
+
 int main() {
     
     sf::RenderWindow window(sf::VideoMode(1024, 1024), "Fantasma"); //Non-negotiable I think; keep in main
@@ -192,46 +194,45 @@ void characterMovementValidation(char input, Character*& player, Map*& map, int*
         if (currentTile / size > 0 && player->getCanMove()) { //Each key checks if within bounds and canMove, if so, set movement.
             
             player->setDirection(4);
-            if (map->getTileValue(currentTile - size) == 16) {
-                player->setCanMove(false);
-                player->setNewTile(currentTile - size);
-            }
+            characterMovementStateMachine(currentTile - size, player, map, player->getWalkableTiles());
         }
         break;
     case 'A':
         if (currentTile % size > 0 && player->getCanMove()) {
             
             player->setDirection(3);
-            if (map->getTileValue(currentTile - 1) == 16) {
-                player->setCanMove(false);
-                player->setNewTile(currentTile - 1);
-            }
+            characterMovementStateMachine(currentTile - 1, player, map, player->getWalkableTiles());
         }
         break;
     case 'S':
         if (currentTile / size < map->getSize()-1 && player->getCanMove()) {
            
             player->setDirection(2);
-            if (map->getTileValue(currentTile + size) == 16) {
-                player->setCanMove(false);
-                player->setNewTile(currentTile + size);
-            }
+            characterMovementStateMachine(currentTile + size, player, map, player->getWalkableTiles());
         }
         break;
     case 'D':
         if (currentTile % size < map->getSize()-1 && player->getCanMove()) {
             
             player->setDirection(1);
-            if (map->getTileValue(currentTile + 1) == 16) {
-                player->setCanMove(false);
-                player->setNewTile(currentTile + 1);
-            }
+            characterMovementStateMachine(currentTile + 1, player, map, player->getWalkableTiles());
         }
         break;
     
     }
 }
 
+void characterMovementStateMachine(int currentTile, Character*& player, Map*& map, vector<int>& walkableTiles) {
+    
+    for (int i = 0; i < walkableTiles.size(); ++i) {
+        if (map->getTileValue(currentTile) == walkableTiles.at(i)) { //Player class should have a list of traversable tiles
+            player->setCanMove(false);
+            player->setNewTile(currentTile);
+            break; //or return?
+        }
+    }
+    
+}
 
 void inventorySequence(char input, Character* player){
     int choice = (input - 48);
