@@ -95,10 +95,9 @@ int main() {
         BossEvent = newMap->getEnteredBoss();
         MapEvent = (!TownEvent) && (!DungeonEvent) && (!BossEvent) && (!InventoryEvent);
 
+        window.clear();
         eventStateMachine(window, newMap, mapData, userChar, drawSequence, input);
         drawElements(window, drawSequence);
-        
-        window.display();
     }
     ////////////////////////////////////////////////////
     delete newMap;
@@ -162,12 +161,13 @@ void pollEvent(sf::RenderWindow& window, char& input) {
             window.close();
         if (event.type == sf::Event::KeyPressed) { //Checks for keypress and assigns necessary ASCII Value
             input = event.key.code + 65;
+            //input = event.key.code;
         }
         if (event.type == sf::Event::KeyReleased) { //Resets ASCII value if key is released
             input = ' ';
         }
     }
-    window.clear();
+    
 }
 
 void drawElements(sf::RenderWindow& window, queue<sf::Sprite>& drawSequence) {
@@ -175,6 +175,7 @@ void drawElements(sf::RenderWindow& window, queue<sf::Sprite>& drawSequence) {
         window.draw(drawSequence.front());
         drawSequence.pop();
     }
+    window.display();
 }
 
 void characterMovementValidation(char input, Character*& player, Map*& map, int* mapData) {
@@ -314,9 +315,6 @@ void buySequence(char input, Map* newMap, Character* player){
 
 char menu(sf::RenderWindow& window, sf::Font titleFont){
 
-    
-
-
     sf::Text title;
     title.setFont(titleFont);
     title.setString("FANTASMA");
@@ -347,28 +345,21 @@ char menu(sf::RenderWindow& window, sf::Font titleFont){
     char input = ' ';
 
     while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-            if (event.type == sf::Event::KeyPressed) {
-                input = event.key.code + 65;
-            }
-            if (event.type == sf::Event::KeyReleased) {
-                input = ' ';
-            }
-        }
-        
+        pollEvent(window, input);
+
         if (input == 'S') {
             window.clear();
             return 's';
         }
         else if (input == 'Q') { exit(0); }
     }
-    
-
 }
+
+
+
+
+
+
 
 void characterSelection(char userChoice, Character*& userChar, sf::RenderWindow& window, sf::Font font){
 
@@ -433,57 +424,42 @@ void characterSelection(char userChoice, Character*& userChar, sf::RenderWindow&
     char input = ' ';
 
     while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-            if (event.type == sf::Event::KeyPressed) {
-                input = event.key.code + 22;
-            }
-            if (event.type == sf::Event::KeyReleased) {
-                input = ' ';
-            }
-
-            if (input == '1') {
-
+        pollEvent(window, input);
+        char choice = input - 43;
+        cout << "You pressed: " << choice << endl;
+        switch (choice) {
+            case '1':
+            {
                 userChar = new Fighter;
                 Item* fighterStarter = new Item(2, 7, 3, 2, 1, 1, "Basic sword");
                 userChar->addItem(fighterStarter);
-                return;
-                //cout << "You have chosen the way of the fighter. You're given a basic sword when your training concludes." << endl;
-
+                return; //bad practice. is there a better way to exit the while loop and the switch case?
             }
-
-            else if (input == '2') {
-
+            case '2':
+            {
                 userChar = new Bard;
                 bardItem* bardStarter = new bardItem(5, 2, 5, 5, 5, 5, "Beat boxing", 5, 3);
                 userChar->addItem(bardStarter);
                 return;
-                //cout << "You have chosen the way of the bard. You've acquired the skillful craft of beat boxing in your training." << endl;
-
             }
-
-            else if (input == '3') {
-
+                
+            case '3':
+            {
                 userChar = new Mage;
                 mageItem* mageStarter = new mageItem(3, 5, 1, 5, 3, 5, "Wooden staff", 3, 3);
                 userChar->addItem(mageStarter);
                 return;
-                //cout << "You have chosen the way of the mage. Your master grants you with a simple wooden staff to complete your training." << endl;
-
             }
-
-            else if(input == '4') {
-
+                
+            case '4':
+            {
                 userChar = new Tank;
                 tankItem* tankStarter = new tankItem(4, 3, 5, 3, 1, 1, "Sturdy stick", 3, true);
                 userChar->addItem(tankStarter);
                 return;
-                //cout << "You have chosen the way of the tank. After dominating the mountains to become a monster in human flesh, you salvage a sturdy stick to impose your will on opponents." << endl;
             }
-            
+            default:
+                break;
         }
         window.clear();
         window.draw(decisionText);
