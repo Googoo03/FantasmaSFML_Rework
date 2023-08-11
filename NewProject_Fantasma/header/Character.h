@@ -82,9 +82,6 @@ class Character{
 
         vector<int>& getWalkableTiles() { return walkableTiles; }
 
-        int getDirection() { return direction; }
-        void setDirection(int dir) { direction = dir; }
-
         bool getCanMove() { return canMove; }
         void setCanMove(bool set);
 

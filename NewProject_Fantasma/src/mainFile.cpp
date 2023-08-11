@@ -193,29 +193,25 @@ void characterMovementValidation(char input, Character*& player, Map*& map, int*
     switch (inputCharacter) {
     case 'W':
         if (currentTile / size > 0 && player->getCanMove()) { //Each key checks if within bounds and canMove, if so, set movement.
-            
-            player->setDirection(4);
             characterMovementStateMachine(currentTile - size, player, map, player->getWalkableTiles());
         }
         break;
     case 'A':
         if (currentTile % size > 0 && player->getCanMove()) {
             
-            player->setDirection(3);
+            player->setCharacterDirection(false);
             characterMovementStateMachine(currentTile - 1, player, map, player->getWalkableTiles());
         }
         break;
     case 'S':
         if (currentTile / size < map->getSize()-1 && player->getCanMove()) {
-           
-            player->setDirection(2);
             characterMovementStateMachine(currentTile + size, player, map, player->getWalkableTiles());
         }
         break;
     case 'D':
         if (currentTile % size < map->getSize()-1 && player->getCanMove()) {
             
-            player->setDirection(1);
+            player->setCharacterDirection(true);
             characterMovementStateMachine(currentTile + 1, player, map, player->getWalkableTiles());
         }
         break;
@@ -426,7 +422,7 @@ void characterSelection(char userChoice, Character*& userChar, sf::RenderWindow&
     while (window.isOpen()) {
         pollEvent(window, input);
         char choice = input - 43;
-        cout << "You pressed: " << choice << endl;
+        
         switch (choice) {
             case '1':
             {
