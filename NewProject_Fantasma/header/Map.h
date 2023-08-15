@@ -59,7 +59,7 @@ class Map {
         int getSize() { return size; }
 
         int getState() { return state; }
-        int setState(int s) { state = s; }
+        void setState(int s) { state = s; }
     private:
         Tilemap mapTiles;
         

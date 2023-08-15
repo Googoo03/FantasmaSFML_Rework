@@ -109,7 +109,7 @@ int main() {
 void eventStateMachine(sf::RenderWindow& window, Map* newMap, Character* player, queue<sf::Sprite>& drawSequence, char input) {
     vector<Bandit*> enemies;
     //sf::Vector2i characterPosition = player->getCharacterPosition();
-    bool DungeonEvent = false;
+    
 
     if (newMap->getEnteredDungeon()) { //event for loading the dungeon
 
@@ -117,7 +117,7 @@ void eventStateMachine(sf::RenderWindow& window, Map* newMap, Character* player,
         enemies = newMap->returnDungeon()->returnEnemies();
 
         newMap->flipEnteredDungeon();
-        DungeonEvent = true;
+        newMap->setState(1);
 
         //SAVES THE PLAYER'S POSITION
         //characterPosition = sf::Vector2i(characterPosition.x, characterPosition.y + 30);
@@ -131,14 +131,16 @@ void eventStateMachine(sf::RenderWindow& window, Map* newMap, Character* player,
     if (newMap->getExit()) {
         newMap->loadTilemap(newMap->returnMapData(), 0);
         newMap->flipExit();
-        DungeonEvent = false;
+
+        newMap->setState(0);
+        
         //SAVES THE PLAYER'S POSITION
         int tile = player->positionStackPop();
         player->setTilePos(tile);
         player->setCharacterPosition(tile, newMap->getSize());
 
     }
-
+    bool DungeonEvent = newMap->getState() == 0;
     window.draw(newMap->returnTilemap()); //tilemap cant be passed into drawSequence, therefore window has to draw it here, any way to optimize?
 
     characterMovementValidation(input, player, newMap);
@@ -235,9 +237,11 @@ void characterMovementValidation(char input, Character*& player, Map*& map) {
 
 void characterMovementStateMachine(int currentTile, Character*& player, Map*& map, vector<int>& walkableTiles) {
     
-    //make the dungeon a map class. then if the player is in a dungeon, then pass in the dungeon
+    //this will need to change in the future, this is simply because there are two possible locations at the moment.
+    int mapTile = map->getState() == 0 ? map->getTileValue(currentTile) : map->returnDungeon()->getTileValue(currentTile);
+
     for (int i = 0; i < walkableTiles.size(); ++i) {
-        if (map->getTileValue(currentTile) == walkableTiles.at(i)) { //Player class should have a list of traversable tiles
+        if (mapTile == walkableTiles.at(i)) { //Player class should have a list of traversable tiles
             player->setCanMove(false);
             player->setNewTile(currentTile);
             break; //or return?

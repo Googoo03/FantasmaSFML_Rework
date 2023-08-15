@@ -44,7 +44,7 @@ class Character{
         Item*& getEquipped(){return equipped;}
         virtual void equipItem(Item*& item) = 0;
         
-        Character(double hp, double mp, double attackDmg, double magicDmg, int carryCapacity, int id, int TextureX, int TextureY) : healthPoints(hp), manaPoints(mp),attackDamage(attackDmg), magicDamage(magicDmg), carryCapacity(carryCapacity), id(id), textureSize(8) {
+        Character(double hp, double mp, double attackDmg, double magicDmg, int carryCapacity, int id, int TextureX, int TextureY) : healthPoints(hp), manaPoints(mp),attackDamage(attackDmg), magicDamage(magicDmg), carryCapacity(carryCapacity), id(id), textureSize(8), equipped(nullptr), nextTile(-1) {
             for (int i = 0; i < 3; ++i) {
                 textureArray[i].loadFromFile("Tilemap.png", sf::IntRect(TextureX, TextureY+(textureSize*i), textureSize, textureSize));
             }

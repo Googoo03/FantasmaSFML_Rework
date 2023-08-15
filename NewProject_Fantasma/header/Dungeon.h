@@ -18,6 +18,7 @@ class Dungeon : public Location{
         string getName(){return Location::name;}
 
         int* returnMapData() { return dungeonmapData; }
+        int getTileValue(int tile) { return dungeonmapData[tile]; }
         vector<Bandit*>& returnEnemies() { return enemies; }
 
         int getXPos() { return Location::xPos; }
