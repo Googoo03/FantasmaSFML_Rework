@@ -34,7 +34,7 @@ void inventorySequence(char input, Character* player);
 
 void drawInventory(Character* player);
 
-void characterMovementValidation(char input, Character*& player, Map*& map, int* mapData);
+void characterMovementValidation(char input, Character*& player, Map*& map);
 
 char menu(sf::RenderWindow& window, sf::Font font);
 
@@ -44,7 +44,7 @@ void setDungeon(Map*& map, Tilemap& tilemap);
 
 void pollEvent(sf::RenderWindow& window, char& input);
 
-void eventStateMachine(sf::RenderWindow& window, Map* newMap, int*& mapData, Character* player, queue<sf::Sprite>& drawSequence, char input);
+void eventStateMachine(sf::RenderWindow& window, Map* newMap, Character* player, queue<sf::Sprite>& drawSequence, char input);
 
 void drawElements(sf::RenderWindow& window, queue<sf::Sprite>& drawSequence);
 
@@ -96,7 +96,7 @@ int main() {
         MapEvent = (!TownEvent) && (!DungeonEvent) && (!BossEvent) && (!InventoryEvent);
 
         window.clear();
-        eventStateMachine(window, newMap, mapData, userChar, drawSequence, input);
+        eventStateMachine(window, newMap, userChar, drawSequence, input);
         drawElements(window, drawSequence);
     }
     ////////////////////////////////////////////////////
@@ -106,38 +106,42 @@ int main() {
     return 0;
 }
 
-void eventStateMachine(sf::RenderWindow& window, Map* newMap, int*& mapData, Character* player, queue<sf::Sprite>& drawSequence, char input) {
+void eventStateMachine(sf::RenderWindow& window, Map* newMap, Character* player, queue<sf::Sprite>& drawSequence, char input) {
     vector<Bandit*> enemies;
-    sf::Vector2i characterPosition = player->getCharacterPosition();
+    //sf::Vector2i characterPosition = player->getCharacterPosition();
     bool DungeonEvent = false;
 
-    if (newMap->getEnteredDungeon()) {
+    if (newMap->getEnteredDungeon()) { //event for loading the dungeon
 
         newMap->loadTilemap(newMap->returnDungeon()->returnMapData(), 1);
-        mapData = newMap->returnDungeon()->returnMapData();
         enemies = newMap->returnDungeon()->returnEnemies();
 
         newMap->flipEnteredDungeon();
         DungeonEvent = true;
 
         //SAVES THE PLAYER'S POSITION
-        characterPosition = sf::Vector2i(characterPosition.x, characterPosition.y + 30);
-        player->positionStackPush(characterPosition);
-        characterPosition = sf::Vector2i(512, 900);
+        //characterPosition = sf::Vector2i(characterPosition.x, characterPosition.y + 30);
+        player->positionStackPush(player->getTilePos());
+        int tile = 248;
+        player->setTilePos(tile);
+        player->setCharacterPosition(tile, newMap->getSize());
+
         /////////////////////////////
     }
     if (newMap->getExit()) {
         newMap->loadTilemap(newMap->returnMapData(), 0);
-        mapData = newMap->returnMapData();
         newMap->flipExit();
         DungeonEvent = false;
         //SAVES THE PLAYER'S POSITION
-        characterPosition = player->positionStackPop();
+        int tile = player->positionStackPop();
+        player->setTilePos(tile);
+        player->setCharacterPosition(tile, newMap->getSize());
+
     }
-    player->setCharacterPosition(characterPosition);
+
     window.draw(newMap->returnTilemap()); //tilemap cant be passed into drawSequence, therefore window has to draw it here, any way to optimize?
 
-    characterMovementValidation(input, player, newMap, mapData);
+    characterMovementValidation(input, player, newMap);
 
     player->updateCharacter();
 
@@ -160,8 +164,8 @@ void pollEvent(sf::RenderWindow& window, char& input) {
         if (event.type == sf::Event::Closed)
             window.close();
         if (event.type == sf::Event::KeyPressed) { //Checks for keypress and assigns necessary ASCII Value
-            input = event.key.code + 65;
-            //input = event.key.code;
+            //input = event.key.code + 65;
+            input = event.key.code;
         }
         if (event.type == sf::Event::KeyReleased) { //Resets ASCII value if key is released
             input = ' ';
@@ -178,8 +182,8 @@ void drawElements(sf::RenderWindow& window, queue<sf::Sprite>& drawSequence) {
     window.display();
 }
 
-void characterMovementValidation(char input, Character*& player, Map*& map, int* mapData) {
-    char inputCharacter = input & 95;
+void characterMovementValidation(char input, Character*& player, Map*& map) {
+    char inputCharacter = input;
 
     sf::Vector2i position = player->getCharacterPosition();
     int currentTile = player->getTilePos();
@@ -191,36 +195,47 @@ void characterMovementValidation(char input, Character*& player, Map*& map, int*
     }
 
     switch (inputCharacter) {
-    case 'W':
+    case sf::Keyboard::W:
         if (currentTile / size > 0 && player->getCanMove()) { //Each key checks if within bounds and canMove, if so, set movement.
             characterMovementStateMachine(currentTile - size, player, map, player->getWalkableTiles());
         }
         break;
-    case 'A':
+    case sf::Keyboard::A:
         if (currentTile % size > 0 && player->getCanMove()) {
             
             player->setCharacterDirection(false);
             characterMovementStateMachine(currentTile - 1, player, map, player->getWalkableTiles());
         }
         break;
-    case 'S':
+    case sf::Keyboard::S:
         if (currentTile / size < map->getSize()-1 && player->getCanMove()) {
             characterMovementStateMachine(currentTile + size, player, map, player->getWalkableTiles());
         }
         break;
-    case 'D':
+    case sf::Keyboard::D:
         if (currentTile % size < map->getSize()-1 && player->getCanMove()) {
             
             player->setCharacterDirection(true);
             characterMovementStateMachine(currentTile + 1, player, map, player->getWalkableTiles());
         }
+    case sf::Keyboard::Space: //space key
+    {
+        
+        if (player->getCanMove()) {
+            cout << "Space key" << endl;
+            map->enterStructure(player->getTilePos());
+            //we know the player is on a walkable tile, no need to check.
+            // we know we need to compare dungeons, where?
+            //if player is on a dungeon, set enteredDungeon accordingly
+        }
         break;
-    
+    }
     }
 }
 
 void characterMovementStateMachine(int currentTile, Character*& player, Map*& map, vector<int>& walkableTiles) {
     
+    //make the dungeon a map class. then if the player is in a dungeon, then pass in the dungeon
     for (int i = 0; i < walkableTiles.size(); ++i) {
         if (map->getTileValue(currentTile) == walkableTiles.at(i)) { //Player class should have a list of traversable tiles
             player->setCanMove(false);
@@ -343,11 +358,11 @@ char menu(sf::RenderWindow& window, sf::Font titleFont){
     while (window.isOpen()) {
         pollEvent(window, input);
 
-        if (input == 'S') {
+        if (input == sf::Keyboard::S) {
             window.clear();
             return 's';
         }
-        else if (input == 'Q') { exit(0); }
+        else if (input == sf::Keyboard::Q) { exit(0); }
     }
 }
 
@@ -421,17 +436,17 @@ void characterSelection(char userChoice, Character*& userChar, sf::RenderWindow&
 
     while (window.isOpen()) {
         pollEvent(window, input);
-        char choice = input - 43;
+        char choice = input;
         
         switch (choice) {
-            case '1':
+            case sf::Keyboard::Num1:
             {
                 userChar = new Fighter;
                 Item* fighterStarter = new Item(2, 7, 3, 2, 1, 1, "Basic sword");
                 userChar->addItem(fighterStarter);
                 return; //bad practice. is there a better way to exit the while loop and the switch case?
             }
-            case '2':
+            case sf::Keyboard::Num2:
             {
                 userChar = new Bard;
                 bardItem* bardStarter = new bardItem(5, 2, 5, 5, 5, 5, "Beat boxing", 5, 3);
@@ -439,7 +454,7 @@ void characterSelection(char userChoice, Character*& userChar, sf::RenderWindow&
                 return;
             }
                 
-            case '3':
+            case sf::Keyboard::Num3:
             {
                 userChar = new Mage;
                 mageItem* mageStarter = new mageItem(3, 5, 1, 5, 3, 5, "Wooden staff", 3, 3);
@@ -447,7 +462,7 @@ void characterSelection(char userChoice, Character*& userChar, sf::RenderWindow&
                 return;
             }
                 
-            case '4':
+            case sf::Keyboard::Num4:
             {
                 userChar = new Tank;
                 tankItem* tankStarter = new tankItem(4, 3, 5, 3, 1, 1, "Sturdy stick", 3, true);

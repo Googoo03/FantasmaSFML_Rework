@@ -19,7 +19,7 @@ class Map {
 
         //inlcude another list for dungeons
 
-        Map():center(size/2), playerX(center),playerY(center){}
+        Map():center(size/2){}
         ~Map();
 
         void createMap();
@@ -29,6 +29,7 @@ class Map {
         void dungeonEvent();
 
         void marchingSquares();
+
         
         bool getEnteredTown(){return EnteredTown;}
 
@@ -48,7 +49,7 @@ class Map {
         Town* returnTown(){ return TownList.at(TownIndex);}
         Dungeon* returnDungeon() { return DungeonList.at(DungeonIndex); }
 
-        void setDungeonIndex(int, int);
+        void enterStructure(int);
 
         int getTileValue(int tile);
         
@@ -56,18 +57,22 @@ class Map {
         Tilemap returnTilemap() { return mapTiles; }
 
         int getSize() { return size; }
+
+        int getState() { return state; }
+        int setState(int s) { state = s; }
     private:
         Tilemap mapTiles;
         
 
         vector<Town*>  TownList;
         vector<Dungeon*>  DungeonList;
-        int playerX,playerY;
-
+        
         bool EnteredTown;
         bool EnteredDungeon;
         bool Exit;
         bool EnteredBoss;
+
+        int state; //0 is normal, 1 is dungeon, 2 is town
 
         int DungeonIndex;
         int TownIndex;

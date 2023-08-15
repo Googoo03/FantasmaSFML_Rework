@@ -1,6 +1,7 @@
 #ifndef DUNGEON_H
 #define DUNGEON_H
 
+//#include "../header/Map.h"
 #include "../header/Location.h"
 #include <vector>
 #include "../header/Item.hpp"
@@ -8,7 +9,7 @@
 #include "../header/PerlinNoise.h"
 #include "../header/Bandit.hpp"
 
-class Dungeon : public Location {
+class Dungeon : public Location{
 
 
     public:
@@ -19,9 +20,9 @@ class Dungeon : public Location {
         int* returnMapData() { return dungeonmapData; }
         vector<Bandit*>& returnEnemies() { return enemies; }
 
-        int getXPos(){return Location::xPos;}
+        int getXPos() { return Location::xPos; }
         int getYPos(){return Location::yPos;}
-
+        
         void createDungeon(PerlinNoise*& myPerlin);
         
     private:

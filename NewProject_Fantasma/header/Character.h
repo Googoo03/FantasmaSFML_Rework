@@ -23,7 +23,7 @@ class Character{
         int carryCapacity;
         sf::Texture textureArray[3];
         uint16_t textureSize;
-        std::stack<sf::Vector2i> positionStack;
+        std::stack<int> positionStack;
 
         sf::Sprite characterSprite;
         sf::Vector2i characterPosition;
@@ -63,14 +63,14 @@ class Character{
         }
         ~Character();
 
-        void positionStackPush(sf::Vector2i pos) { positionStack.push(pos); }
-        sf::Vector2i positionStackPop() { 
-            sf::Vector2i newPos = positionStack.top();
+        void positionStackPush(int tile) { positionStack.push(tile); }
+        int positionStackPop() { 
+            int newTile = positionStack.top();
             positionStack.pop();
-            return newPos;
+            return newTile;
         }
         sf::Texture& getTexture(int index) { return textureArray[index]; }
-        void setCharacterPosition(sf::Vector2i);
+        void setCharacterPosition(int, int);
         sf::Vector2i getCharacterPosition() { return characterPosition; }
         void updateCharacter();
         void setCharacterDirection(bool); //false- 0 is left : 1 is right
@@ -78,7 +78,8 @@ class Character{
         sf::Sprite& getCharacterSprite() { return characterSprite; }
 
         void interpolatePosition();
-        //void setNewPosition(sf::Vector2i);
+        
+        //void enteredStructureCheck(int playerTile);
 
         vector<int>& getWalkableTiles() { return walkableTiles; }
 

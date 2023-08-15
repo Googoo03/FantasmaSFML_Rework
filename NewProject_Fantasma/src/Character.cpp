@@ -8,7 +8,8 @@ Character::~Character(){
     }
 }
 
-void Character::setCharacterPosition(sf::Vector2i pos) {
+void Character::setCharacterPosition(int tile, int mapSize) {
+    sf::Vector2i pos = sf::Vector2i( (tile%16) * 64, (tile /16) * 64);
     characterPosition = pos;
 }
 
@@ -44,6 +45,10 @@ void Character::updateCharacter() {
     characterSprite.setPosition(characterPosition.x - (characterPosition.x % 8), characterPosition.y - (characterPosition.y % 8));
     characterSprite.setTexture(textureArray[characterSpriteIndex]);
 }
+
+/*void Character::enteredStructureCheck(int p) {
+
+}*/
 
 void Character::setCharacterDirection(bool right) {
     if (right) {
